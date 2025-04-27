@@ -1,6 +1,6 @@
 {
   "name": "@nangazaki/vue-rbac",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Role-Based Access Control (RBAC) implementation for Vue.js",
   "type": "module",
   "main": "dist/index.js",
