@@ -1,4 +1,4 @@
-import type { RBACConfig, RBACState, RolesConfig } from "@/types";
+import type { RBACConfig, RBACState, RolesConfig } from "../types/index";
 
 /**
  * Loads RBAC configuration from a remote endpoint and updates the state.

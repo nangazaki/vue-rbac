@@ -1,4 +1,4 @@
-import { CONFIG_MODE, type RBACConfig } from "@/types";
+import { CONFIG_MODE, type RBACConfig } from "../types/index";
 
 /**
  * Default configuration object for RBAC (Role-Based Access Control)
@@ -15,6 +15,6 @@ export const defaultConfig: RBACConfig = {
   mode: CONFIG_MODE.STATIC,
   apiEndpoint: "/api/rbac/permissions",
   fetchOptions: {},
-  transformResponse: (data) => data,
+  transformResponse: (data: any) => data,
   autoInit: true,
 };

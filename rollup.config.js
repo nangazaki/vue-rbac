@@ -1,60 +1,29 @@
-import resolve from '@rollup/plugin-node-resolve'
-import commonjs from '@rollup/plugin-commonjs'
-import typescript from '@rollup/plugin-typescript'
-import { terser } from 'rollup-plugin-terser'
-import pkg from './package.json'
+// rollup.config.js
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
+import { terser } from "rollup-plugin-terser";
 
-export default [
-  {
-    input: 'src/index.ts',
-    output: {
-      file: pkg.module,
-      format: 'esm',
+export default {
+  input: "src/index.ts",
+  output: [
+    {
+      file: "dist/index.js",
+      format: "esm",
       sourcemap: true,
-      export: 'named',
     },
-    plugins: [
-      typescript({ tsconfig: './tsconfig.json' }),
-      resolve(),
-      commonjs()
-    ],
-    external: ['vue']
-  },
-
-  {
-    input: 'src/index.ts',
-    output: {
-      file: pkg.main,
-      format: 'cjs',
-      sourcemap: true,
-      export: 'named',
-    },
-    plugins: [
-      typescript({ tsconfig: './tsconfig.json' }),
-      resolve(),
-      commonjs()
-    ],
-    external: ['vue']
-  },
-
-  {
-    input: 'src/index.ts',
-    output: {
-      name: 'VueRBAC',
-      file: pkg.browser,
-      format: 'umd',
-      export: 'named',
-      globals: {
-        vue: 'Vue'
-      },
-      sourcemap: true
-    },
-    plugins: [
-      typescript({ tsconfig: './tsconfig.json' }),
-      resolve(),
-      commonjs(),
-      terser()
-    ],
-    external: ['vue']
-  }
-]
+  ],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript({
+      tsconfig: "./tsconfig.json",
+      declaration: true,          // gerar .d.ts
+      declarationDir: "dist",     // onde colocar .d.ts
+      rootDir: "src",             // origem dos arquivos
+      emitDeclarationOnly: false, // ⬅️⬅️ MUITO IMPORTANTE: também gera JS!!
+    }),
+    terser(),
+  ],
+  external: ["vue"], // tratar vue como peer, não embutir
+};

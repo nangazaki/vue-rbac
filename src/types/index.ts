@@ -1,4 +1,5 @@
-import type { LogLevel } from "@/utils/logger";
+import type { LogLevel } from "../utils/logger";
+
 
 export enum CONFIG_MODE {
   STATIC = "static",
@@ -41,7 +42,8 @@ export interface RBACState {
 
 export interface VueRBACPluginOptions {
   config?: Partial<RBACConfig>;
-  logLevel?: LogLevel;
+  logLevel?: LogLevel
+  ;
 }
 
 export interface RBAC {

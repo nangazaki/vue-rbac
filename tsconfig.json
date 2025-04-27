@@ -1,20 +1,21 @@
+// tsconfig.json
 {
   "compilerOptions": {
-    "target": "ES2018",
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "lib": ["Es2019", "DOM"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "target": "ES2019",                    // Bom nível para Node.js moderno e browsers
+    "module": "ESNext",                    // Deixa o Rollup cuidar do bundling
+    "declaration": true,                   // Gera arquivos .d.ts
+    "declarationDir": "./dist",             // Coloca os tipos no dist
+    "emitDeclarationOnly": false,           // Gera JS + Types
+    "outDir": "./dist",                     // JS vai para dist também
+    "rootDir": "./src",                     // src é a raiz dos arquivos
+    "strict": true,                         // Melhor prática para segurança
+    "esModuleInterop": true,                // Para interop com libs comuns
+    "moduleResolution": "node",             // Resolve módulos estilo Node
+    "allowSyntheticDefaultImports": true,   // Permite import default sem erro
+    "skipLibCheck": true,                   // Mais rápido (não checa deps do node_modules)
+    "sourceMap": true,                      // Gera sourcemaps (opcional mas bom)
+    "forceConsistentCasingInFileNames": true // Evita bugs no Linux/Mac (case sensitive)
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "tests"]
 }

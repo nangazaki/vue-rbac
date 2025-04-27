@@ -1,22 +1,22 @@
 {
   "name": "@nangazaki/vue-rbac",
-  "type": "module",
   "version": "1.0.1",
   "description": "Role-Based Access Control (RBAC) implementation for Vue.js",
-  "main": "dist/vue-rbac.cjs.js",
-  "module": "dist/vue-rbac.esm.js",
-  "browser": "dist/vue-rbac.min.js",
-  "types": "dist/types/index.d.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
-  },
-  "scripts": {
-    "dev": "rollup -c --bundleConfigAsCjs -w",
-    "build": "rollup -c --bundleConfigAsCjs",
-    "test": "jest",
-    "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
-    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "vue",
@@ -24,7 +24,9 @@
     "access-control",
     "roles",
     "permissions",
-    "directive"
+    "directive",
+    "vue3",
+    "vue-rbac"
   ],
   "author": "Helder Cambuta",
   "license": "MIT",
@@ -33,7 +35,19 @@
     "url": "https://github.com/nangazaki/vue-rbac.git"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "vue": "^3.3.0 || ^3.4.0 || ^3.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "rollup -c --bundleConfigAsCjs -w",
+    "build": "rollup -c --bundleConfigAsCjs",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",

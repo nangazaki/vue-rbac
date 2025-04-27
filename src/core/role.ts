@@ -1,4 +1,4 @@
-import type { Permission, RoleKey, RolesConfig } from "@/types";
+import type { Permission, RoleKey, RolesConfig } from "../types/index";
 
 /**
  * Retrieves all permissions associated with a specific role, including inherited permissions.

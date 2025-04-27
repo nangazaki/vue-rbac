@@ -1,4 +1,4 @@
-import { CONFIG_MODE, type RBACConfig } from "@/types";
+import { CONFIG_MODE, type RBACConfig } from "../types/index";
 
 const VALID_MODES = [
   CONFIG_MODE.STATIC,
