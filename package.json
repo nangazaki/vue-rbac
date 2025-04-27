@@ -1,7 +1,7 @@
 {
   "name": "vue-rbac",
   "type": "module",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "Role-Based Access Control (RBAC) implementation for Vue.js",
   "main": "dist/vue-rbac.cjs.js",
   "module": "dist/vue-rbac.esm.js",
