@@ -49,7 +49,7 @@ export function createRBACDirective(rbac: RBAC) {
 }
 
 function checkAccess(binding: DirectiveBinding, rbac: RBAC): boolean {
-  const modifier = Object.keys(binding.modifiers)[0] || "permission";
+  const modifier = binding.arg || Object.keys(binding.modifiers)[0] || "permission";
   const value = binding.value;
   let hasAccess = false;
 

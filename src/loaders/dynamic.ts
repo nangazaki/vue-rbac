@@ -1,5 +1,26 @@
 import type { RBACConfig, RBACState, RolesConfig } from "@/types";
 
+/**
+ * Loads RBAC configuration from a remote endpoint and updates the state.
+ * 
+ * @param state - The current RBAC state object to be updated
+ * @param options - Required configuration options including API endpoint and fetch options
+ * @param mergeWithExisting - When true, merges the loaded config with existing roles. When false, replaces entirely
+ * @returns Promise resolving to the updated roles configuration
+ * @throws {Error} When the fetch request fails or returns a non-ok status
+ * 
+ * @example
+ * ```typescript
+ * const state = createRBACState();
+ * const options = {
+ *   apiEndpoint: 'https://api.example.com/rbac',
+ *   fetchOptions: { headers: { 'Authorization': 'Bearer token' } },
+ *   transformResponse: (data) => data
+ * };
+ * 
+ * const roles = await loadDynamicConfig(state, options);
+ * ```
+ */
 export async function loadDynamicConfig(
   state: RBACState,
   options: Required<RBACConfig>,

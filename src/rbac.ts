@@ -1,76 +1,82 @@
-import { RoleKey, Permission } from "./types/index";
 import { defaultConfig } from "./config/default";
 import { validateConfig } from "./config/schema";
+import { getAllPermissionsForRole } from "./core/role";
+import { loadDynamicConfig } from "./loaders/dynamic";
+import { loadStaticConfig } from "./loaders/static";
 import { createStore } from "./store";
 import { CONFIG_MODE, type RBAC, type RBACConfig } from "./types";
-import { loadStaticConfig } from "./loaders/static";
-import { loadDynamicConfig } from "./loaders/dynamic";
-import { gettAllPermissionForRole } from "./core/role";
+import { Permission, RoleKey } from "./types/index";
 
 export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
-  const validatedConfig = validateConfig({
-    ...defaultConfig,
-    ...config,
-  });
+  // 1) valida e define defaults
+  const options = validateConfig({ ...defaultConfig, ...config });
 
-  const state = createStore(validatedConfig.roles || {});
+  // 2) cria o state
+  const state = createStore(options.roles);
+
+  // 3) cache local de permissões do usuário
+  let userPermissions: Set<Permission> = new Set();
+
+  // 4) função para (re)computar o Set de permissões do usuário
+  function computeUserPermissions() {
+    const perms = new Set<Permission>();
+    for (const roleKey of state.userRoles) {
+      const all = getAllPermissionsForRole(roleKey, state.roles);
+      all.forEach(p => perms.add(p));
+    }
+    userPermissions = perms;
+  }
 
   const rbac: RBAC = {
-    options: validatedConfig as Required<RBACConfig>,
+    options: options as Required<RBACConfig>,
     state,
 
     async init() {
-      if (this.state.isInitialized) {
-        return this.state.roles;
+      if (!state.isInitialized) {
+        state.isInitialized = true;
+        switch (options.mode) {
+          case CONFIG_MODE.STATIC:
+            await loadStaticConfig(state, options as Required<RBACConfig>);
+            break;
+          case CONFIG_MODE.DYNAMIC:
+            await loadDynamicConfig(state, options as Required<RBACConfig>);
+            break;
+          case CONFIG_MODE.HYBRID:
+            await loadStaticConfig(state, options as Required<RBACConfig>);
+            await loadDynamicConfig(state, options as Required<RBACConfig>, true);
+            break;
+        }
       }
-
-      switch (this.options.mode) {
-        case CONFIG_MODE.STATIC:
-          return loadStaticConfig(this.state, this.options);
-        case CONFIG_MODE.DYNAMIC:
-          return loadDynamicConfig(this.state, this.options);
-        case CONFIG_MODE.HYBRID:
-          await loadStaticConfig(this.state, this.options);
-          return loadDynamicConfig(this.state, this.options, true);
-      }
+      // após carregar roles, recomputa perms do usuário
+      computeUserPermissions();
+      return state.roles;
     },
 
     async fetchRolesAndPermissions() {
-      return loadDynamicConfig(this.state, this.options);
+      await loadDynamicConfig(state, options as Required<RBACConfig>);
+      computeUserPermissions();
+      return state.roles;
     },
 
     setUserRoles(roles: RoleKey | RoleKey[]) {
-      this.state.userRoles = Array.isArray(roles) ? roles : [roles];
+      state.userRoles = Array.isArray(roles) ? roles : [roles];
+      computeUserPermissions();
     },
 
     hasPermission(permission: Permission): boolean {
-      if (!this.state.isInitialized || this.state.userRoles.length === 0) {
-        return false;
-      }
-
-      return this.state.userRoles.some((roleKey) => {
-        const role = this.state.roles[roleKey];
-        if (!role) return false;
-
-        const allPermissions = gettAllPermissionForRole(
-          roleKey,
-          this.state.roles
-        );
-        return allPermissions.includes(permission);
-      });
+      return userPermissions.has(permission);
     },
 
-    hasRole(role: RoleKey) {
-      return this.state.userRoles.includes(role);
+    hasRole(role: RoleKey): boolean {
+      return state.userRoles.includes(role);
     },
 
     hasAnyPermission(permissions: Permission[]): boolean {
-      console.log(permissions);
-      return permissions.some((permission) => this.hasPermission(permission));
+      return permissions.some(p => userPermissions.has(p));
     },
 
     hasAllPermissions(permissions: Permission[]): boolean {
-      return permissions.every((permission) => this.hasPermission(permission));
+      return permissions.every(p => userPermissions.has(p));
     },
   };
 

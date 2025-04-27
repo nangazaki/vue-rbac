@@ -1,3 +1,5 @@
+import type { LogLevel } from "@/utils/logger";
+
 export enum CONFIG_MODE {
   STATIC = "static",
   DYNAMIC = "dynamic",
@@ -35,6 +37,11 @@ export interface RBACState {
   userRoles: RoleKey[];
   isLoading: boolean;
   isInitialized: boolean;
+}
+
+export interface VueRBACPluginOptions {
+  config?: Partial<RBACConfig>;
+  logLevel?: LogLevel;
 }
 
 export interface RBAC {
