@@ -10,7 +10,8 @@ export default [
     output: {
       file: pkg.module,
       format: 'esm',
-      sourcemap: true
+      sourcemap: true,
+      export: 'named',
     },
     plugins: [
       typescript({ tsconfig: './tsconfig.json' }),
@@ -25,7 +26,8 @@ export default [
     output: {
       file: pkg.main,
       format: 'cjs',
-      sourcemap: true
+      sourcemap: true,
+      export: 'named',
     },
     plugins: [
       typescript({ tsconfig: './tsconfig.json' }),
@@ -41,6 +43,7 @@ export default [
       name: 'VueRBAC',
       file: pkg.browser,
       format: 'umd',
+      export: 'named',
       globals: {
         vue: 'Vue'
       },
