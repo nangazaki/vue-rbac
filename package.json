@@ -7,6 +7,9 @@
   "module": "dist/vue-rbac.esm.js",
   "browser": "dist/vue-rbac.min.js",
   "types": "dist/types/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "rollup -c --bundleConfigAsCjs -w",
     "build": "rollup -c --bundleConfigAsCjs",
