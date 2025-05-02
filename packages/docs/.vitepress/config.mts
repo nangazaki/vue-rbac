@@ -6,7 +6,6 @@ export default defineConfig({
   description: "A powerful, dependency‑free RBAC toolkit built for Vue 3",
   lang: "en-US",
   cleanUrls: true,
-  ignoreDeadLinks: true,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     search: {
