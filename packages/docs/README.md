@@ -1,5 +1,21 @@
-# Vue 3 + TypeScript + Vite
+# Vue RBAC Documentation
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+This is the documentation site for **Vue RBAC**, a lightweight and flexible Role-Based Access Control (RBAC) solution for Vue 3 applications.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+Built with [VitePress](https://vitepress.dev), this site provides guides, API references, and practical examples to help you integrate Vue RBAC into your Vue projects.
+
+## 📚 Documentation Structure
+
+- `index.md` – Home page (landing)
+- `why-vue-rbac.md` – Why choose Vue RBAC
+- `guide/` – Setup and usage guides
+  - `getting-started.md` – Installation and basic usage
+  - `configuration.md` – Configuration options and setup
+  - `api-reference.md` – Composables and directive API
+- `tutorial/` – Hands-on usage examples
+
+## 🛠 Local Development
+
+```bash
+pnpm install
+pnpm docs:dev
