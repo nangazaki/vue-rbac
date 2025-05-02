@@ -155,5 +155,5 @@ By default, user roles reset on page reload. To persist them, pass a `storage` a
   ``` -->
 
 
-> Ready to see code in action? Check out the [Examples](/tutorial/examples) page.
+> Ready to see code in action? Check out the [Examples](/examples) page.
 
