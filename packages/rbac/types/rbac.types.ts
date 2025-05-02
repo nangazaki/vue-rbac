@@ -1,4 +1,3 @@
-
 import type { RBACConfig } from "./config.types";
 import type { Permission, RoleKey, RolesConfig } from "./roles.types";
 import type { LogLevel } from "./utils.types";
@@ -23,6 +22,15 @@ export interface RBAC {
   setUserRoles(roles: RoleKey | RoleKey[]): void;
   hasPermission(permission: Permission): boolean;
   hasRole(role: RoleKey): boolean;
+  hasAnyPermission(permissions: Permission[]): boolean;
+  hasAllPermissions(permissions: Permission[]): boolean;
+}
+
+export interface IUseRBAC {
+  state: RBACState;
+  setUserRoles(roles: RoleKey | RoleKey[]): void;
+  hasRole(role: RoleKey): boolean;
+  hasPermission(permission: Permission): boolean;
   hasAnyPermission(permissions: Permission[]): boolean;
   hasAllPermissions(permissions: Permission[]): boolean;
 }

@@ -1,4 +1,5 @@
 import type { RolesConfig } from "./roles.types";
+import type { StorageAdapter } from "./storage-adapter.types";
 
 export enum CONFIG_MODE {
   STATIC = "static",
@@ -17,4 +18,6 @@ export interface RBACConfig {
   fetchOptions?: FetchOptions;
   transformResponse?: (data: any) => { roles: RolesConfig };
   autoInit?: boolean;
+  // storage: StorageAdapter;
+  // storageKey?: string;
 }
