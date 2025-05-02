@@ -138,5 +138,5 @@ export default router
 
 ---
 
-📚 See the [API Reference](/guide//api-reference) for full details on methods and types.
+📚 See the [API Reference](/guide/api-reference) for full details on methods and types.
 
