@@ -3,9 +3,10 @@ import { defineConfig } from "vitepress";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Vue RBAC",
-  description: "A VitePress Site",
+  description: "A powerful, dependency‑free RBAC toolkit built for Vue 3",
   lang: "en-US",
   cleanUrls: true,
+  ignoreDeadLinks: true,
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     search: {
@@ -43,18 +44,14 @@ export default defineConfig({
 
     socialLinks: [
       { icon: "github", link: "https://github.com/nangazaki/vue-rbac" },
-      { icon: "twitter", link: "https://twitter.com/heldercambuta" },
-      { icon: "discord", link: "..." },
+      { icon: "twitter", link: "https://twitter.com/helder_cambuta" },
     ],
 
     docFooter: {
       prev: false,
       next: true,
     },
-    footer: {
-      message: "Released under the MIT License.",
-      copyright: "Copyright © 2025",
-    },
+
     // Mobile Config only
     returnToTopLabel: 'Go to Top',
     sidebarMenuLabel: 'Menu',
