@@ -67,4 +67,4 @@ Use Vue RBAC if your app:
 
 With Vue RBAC, access control is no longer scattered—it becomes a consistent, secure, and declarative part of your architecture.
 
-Ready to secure your app? [Start here →](/getting-started)
+Ready to secure your app? [Start here →](/guide/getting-started.md)
