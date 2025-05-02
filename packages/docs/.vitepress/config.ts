@@ -2,7 +2,6 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  base: "/vue-rbac/",
   title: "Vue RBAC",
   description: "A powerful, dependency‑free RBAC toolkit built for Vue 3",
   lang: "en-US",
