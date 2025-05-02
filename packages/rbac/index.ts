@@ -4,8 +4,10 @@ import { VueRBACPluginOptions } from "./types/index";
 import { logger, LogLevel } from "./utils/logger";
 import { createRBAC } from "./rbac";
 import { initializeLogger } from "./utils/initialize-logger";
+import { RBAC_SYMBOL } from "./symbols";
 
 export * from "./types";
+export * from "./composables";
 export { LogLevel };
 
 export const VueRBAC: Plugin = {
@@ -18,7 +20,7 @@ export const VueRBAC: Plugin = {
 
     app.config.globalProperties.$rbac = rbac;
 
-    app.provide("rbac", rbac);
+    app.provide(RBAC_SYMBOL, rbac);
 
     if (rbac.options.autoInit) {
       rbac.init().catch((error) => {

@@ -110,12 +110,11 @@ Check for any permission in a list:
 ## 🧠 Programmatic Access
 
 ```ts
-import { inject } from 'vue';
-import type { RBAC } from '@nangazaki/vue-rbac';
+const { setUserRoles, hasPermission } = useRBAC();
 
-const rbac = inject<RBAC>('rbac');
+setUserRoles("admin")
 
-if (rbac?.hasPermission('posts:create')) {
+if (hasPermission('posts:create')) {
   console.log('User can create posts');
 }
 ```
@@ -178,8 +177,8 @@ declare module 'vue' {
 ## 🛠 Development
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm build
 ```
 
 ---

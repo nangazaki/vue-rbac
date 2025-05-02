@@ -1,34 +1,30 @@
-import typescript from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
 import { terser } from "rollup-plugin-terser";
 
 export default {
-  input: {
-    index: "index.ts",
-    directive: "directive.ts",
-    rbac: "rbac.ts",
-    "core/role": "core/role.ts",
-    "config/default": "config/default.ts",
-    "config/schema": "config/schema.ts",
-  },
+  input: { index: "index.ts" },
+
   output: {
     dir: "dist",
     format: "esm",
     sourcemap: true,
     preserveModules: true,
-    preserveModulesRoot: ".",
+    preserveModulesRoot: ".",   
   },
+
+  external: ["vue"],
+
   plugins: [
     resolve(),
     commonjs(),
     typescript({
       tsconfig: "./tsconfig.json",
+      rootDir: ".",            
       declaration: true,
       declarationDir: "dist",
-      rootDir: ".",
     }),
     terser(),
   ],
-  external: ["vue"],
 };
