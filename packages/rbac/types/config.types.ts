@@ -18,6 +18,6 @@ export interface RBACConfig {
   fetchOptions?: FetchOptions;
   transformResponse?: (data: any) => { roles: RolesConfig };
   autoInit?: boolean;
-  // storage: StorageAdapter;
-  // storageKey?: string;
+  storage: StorageAdapter;
+  storageKey?: string;
 }

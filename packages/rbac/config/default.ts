@@ -1,3 +1,4 @@
+import { sessionStorageAdapter } from "./../storage/session-storage";
 import { CONFIG_MODE, type RBACConfig } from "../types/index";
 
 /**
@@ -17,4 +18,5 @@ export const defaultConfig: RBACConfig = {
   fetchOptions: {},
   transformResponse: (data: any) => data,
   autoInit: true,
+  storage: sessionStorageAdapter,
 };

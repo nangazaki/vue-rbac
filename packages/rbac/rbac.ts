@@ -10,15 +10,15 @@ import { Permission, RoleKey } from "./types/index";
 export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
   const options = validateConfig({ ...defaultConfig, ...config });
 
-  // const storage = options.storage;
-  // const storageKey = options.storageKey ?? "vue-rbac@v1";
+  const storage = options.storage;
+  const storageKey = options.storageKey ?? "vue-rbac@v1";
 
   const state = createStore(options.roles);
 
-  // if (storage) {
-  //   const savedRoles = storage.get<RoleKey[]>(`${storageKey}:roles`);
-  //   if (savedRoles && Array.isArray(savedRoles)) state.userRoles = savedRoles;
-  // }
+  if (storage) {
+    const savedRoles = storage.get<RoleKey[]>(`${storageKey}:roles`);
+    if (savedRoles && Array.isArray(savedRoles)) state.userRoles = savedRoles;
+  }
 
   let userPermissions: Set<Permission> = new Set();
 
@@ -68,7 +68,8 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
 
     setUserRoles(roles: RoleKey | RoleKey[]) {
       state.userRoles = Array.isArray(roles) ? roles : [roles];
-      // if (storage) storage.set(storageKey, Array.isArray(roles) ? roles : [roles])
+      if (storage)
+        storage.set(storageKey, Array.isArray(roles) ? roles : [roles]);
       computeUserPermissions();
     },
 
