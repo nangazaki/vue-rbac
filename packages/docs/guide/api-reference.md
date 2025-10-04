@@ -102,6 +102,7 @@ import {
 | ------------------- | -------------------------------------- | ------------- | ---------------------------------------------------- |
 | `roles?`            | `RolesConfig`                          | `{}`          | Static roles & permissions map                       |
 | `mode?`             | `"static" \| "dynamic" \| "hybrid"`    | `"static"`    | Load strategy                                        |
+| `fetchRoles?`       | `() => Promise<RolesConfig>`           | `undefined`   | Agnostic async function to get roles from any source |
 | `apiEndpoint?`      | `string`                               | `undefined`   | URL for dynamic fetch                                |
 | `fetchOptions?`     | `RequestInit`                          | `{}`          | Options for `fetch` when in dynamic mode             |
 | `transformResponse?`| `(data: any) => { roles: RolesConfig }` | identity     | Map API response to `{ roles }`                      |

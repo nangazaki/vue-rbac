@@ -20,7 +20,7 @@ interface RBACConfig {
   /**
    * Loading strategy:
    * - `'static'` – roles come solely from `roles`.
-   * - `'dynamic'` – roles are fetched from `apiEndpoint`.
+   * - `'dynamic'` – roles are fetched from `apiEndpoint` or `fetchRoles`.
    * - `'hybrid'` – load `roles` first, then merge with remote.
    */
   mode?: 'static' | 'dynamic' | 'hybrid';
@@ -30,6 +30,12 @@ interface RBACConfig {
    * Should return JSON matching `{ roles: RolesConfig }`.
    */
   apiEndpoint?: string;
+
+  /**
+   * Optional function to fetch roles in an agnostic way.
+   * Can return roles from any source: API, local JSON, or another service.
+   */
+  fetchRoles?: () => Promise<RolesConfig>;
 
   /**
    * Options passed to `fetch()` when loading dynamically.
@@ -47,19 +53,18 @@ interface RBACConfig {
    */
   autoInit?: boolean;
 
-}
-```
-
-  <!-- /**
+  /**
    * Persist user roles between page reloads. Provide a custom adapter
-   * or use the built‑in `localStorageAdapter` or `cookieAdapter`.
+   * or use the built‑in `localStorageAdapter`, `sessionStorageAdapter`, or `cookieStorageAdapter`.
    */
   storage?: StorageAdapter;
 
   /**
    * Key under which roles are saved in the chosen storage.
    */
-  storageKey?: string; -->
+  storageKey?: string;
+}
+```
 
 > All options are optional—defaults are used when you omit them.
 
@@ -86,7 +91,7 @@ createRBAC({
 ### 🔹 Dynamic Mode
 
 - **`mode: 'dynamic'`**
-- Fetches roles from `apiEndpoint` each time you call `init()` or `fetchRolesAndPermissions()`.
+- Fetches roles from `apiEndpoint` or `fetchRoles` each time you call `init()` or `fetchRolesAndPermissions()`.
 - Does not use the `roles` map.
 - Ideal for server‑driven, frequently changing permissions.
 
@@ -95,6 +100,18 @@ createRBAC({
   mode: 'dynamic',
   apiEndpoint: '/api/roles',
   transformResponse: resp => ({ roles: resp.data })
+})
+```
+
+Or using the agnostic fetch function:
+
+```ts
+createRBAC({
+  mode: 'dynamic',
+  fetchRoles: async () => ({
+    editor: { permissions: ['edit:posts'] },
+    moderator: { permissions: ['delete:comments'] }
+  })
 })
 ```
 
@@ -112,6 +129,17 @@ createRBAC({
 })
 ```
 
+Or with an agnostic fetch:
+
+```ts
+createRBAC({
+  mode: 'hybrid',
+  roles: { guest: { permissions: ['read'] } },
+  fetchRoles: async () => ({
+    admin: { permissions: ['create', 'delete'] }
+  })
+})
+```
 
 ## Integrating with Backends
 
@@ -119,16 +147,18 @@ createRBAC({
    ```json
    { "roles": { "admin": { "permissions": ["read","write"] }, … } }
    ```
+
 2. Use `transformResponse` if your JSON is nested:
    ```ts
    transformResponse(data) {
      return { roles: data.payload.roles };
    }
    ```
+
 3. Secure your endpoint (e.g. JWT, session) so only authorized clients can fetch roles.
 
 
-<!-- ## Custom Storage Adapters
+## Custom Storage Adapters
 
 By default, user roles reset on page reload. To persist them, pass a `storage` adapter:
 
@@ -152,8 +182,7 @@ By default, user roles reset on page reload. To persist them, pass a `storage` a
     remove: key => /* ... */
   };
   createRBAC({ storage: myAdapter });
-  ``` -->
-
+  ``` 
 
 > Ready to see code in action? Check out the [Examples](/examples) page.
 

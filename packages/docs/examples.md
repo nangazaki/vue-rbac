@@ -79,7 +79,7 @@ const canPublish = rbac.hasPermission('publish')
 </template>
 ```
 
-## 4. Dynamic Roles from API
+## 4. Dynamic Roles from API (⚠️ Deprecated)
 
 ```ts
 const rbac = createRBAC({
@@ -93,7 +93,7 @@ const rbac = createRBAC({
 await rbac.init()
 ```
 
-## 5. Hybrid Mode
+## 5. Hybrid Mode (⚠️ Deprecated)
 
 Combine static defaults with dynamic overrides:
 
@@ -110,7 +110,25 @@ const rbac = createRBAC({
 await rbac.init()
 ```
 
-## 6. Route Guards with Vue Router
+## 6. Agnostic Dynamic/Hybrid Mode
+
+You can fetch roles from any source, not only a REST API:
+
+```ts
+  const rbac = createRBAC({
+  mode: CONFIG_MODE.HYBRID,
+  roles: { guest: { permissions: ['read'] } },
+  fetchRoles: async () => ({
+    admin: { permissions: ['create', 'edit'] }
+  }),
+  storage: localStorageAdapter
+})
+
+await rbac.init()
+
+```
+
+## 7. Route Guards with Vue Router
 
 ```ts
 // router.ts

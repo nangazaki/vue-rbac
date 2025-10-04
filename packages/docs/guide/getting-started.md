@@ -37,7 +37,7 @@ const app = createApp(App);
 
 app.use(VueRBAC, {
   config: {
-    mode: CONFIG_MODE.STATIC,
+    mode: CONFIG_MODE.STATIC, // can be STATIC, DYNAMIC, or HYBRID
     autoInit: true,
     roles: {
       admin: {
@@ -50,6 +50,15 @@ app.use(VueRBAC, {
       },
       // others roles
     },
+    
+    // Optional: persist user roles using a storage adapter
+    storage: localStorageAdapter,
+
+    // Optional: fetch roles dynamically from any source
+    fetchRoles: async () => ({
+      editor: { permissions: ["edit:posts"] },
+      moderator: { permissions: ["delete:comments"] }
+    }),
   }
 });
 
@@ -66,6 +75,12 @@ You can use the v-rbac directive to conditionally render elements based on permi
 </template>
 ```
 
+You can also use advanced modifiers:
+
+- v-rbac:any="['edit:posts','delete:posts']" – render if user has any of the listed permissions
+- v-rbac:all="['read:posts','update:posts']" – render if user has all permissions
+- v-rbac:not="'delete:posts'" – render if user does not have the permission
+- v-rbac:role="'admin'" – render if user has the role
 
 ### Use the Composable
 
@@ -88,7 +103,21 @@ if (hasPermission('delete')) {
 Vue RBAC supports three configuration modes:
 
 - **static:** Define all roles and permissions locally.
-- **dynamic:** Load roles and permissions from an external source.
+- **dynamic:** Load roles and permissions from an external source or via the **fetchRoles** function.
 - **hybrid:** Combine static and dynamic sources.
+
+## Storage Adapters
+
+Persist user roles with one of the built-in adapters:
+
+```ts
+import { localStorageAdapter, sessionStorageAdapter, cookieStorageAdapter } from '@nangazaki/vue-rbac'
+
+app.use(VueRBAC, {
+  config: {
+    storage: localStorageAdapter, // or sessionStorageAdapter / cookieStorageAdapter
+  }
+})
+```
 
 Learn more in the [API Reference](/guide/api-reference).
