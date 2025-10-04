@@ -55,7 +55,7 @@ app.use(VueRBAC, {
 app.mount('#app');
 ```
 
-### Dynamic Configuration (From API)
+### Dynamic Configuration (From API) [⚠️ Deprecated]
 
 ```ts
 app.use(VueRBAC, {
@@ -77,6 +77,48 @@ app.use(VueRBAC, {
   },
 });
 ```
+
+### Agnostic Mode
+
+In agnostic mode, you have full control over how roles are fetched or defined — from API calls, stores, or any custom logic.
+
+```ts
+app.use(VueRBAC, {
+  config: {
+    mode: CONFIG_MODE.AGNOSTIC,
+    autoInit: true,
+    getRoles: async () => {
+      // Fetch from any source: API, Pinia, localStorage, etc.
+      return await fetchUserRoles();
+    },
+  },
+});
+```
+
+---
+
+## 🗄 Storage Adapters
+
+Vue RBAC supports built-in storage adapters to persist roles and permissions automatically.
+
+```ts
+import { localStorageAdapter, sessionStorageAdapter, cookieStorageAdapter } from '@nangazaki/vue-rbac';
+
+app.use(VueRBAC, {
+  config: {
+    mode: CONFIG_MODE.DYNAMIC,
+    storage: localStorageAdapter,
+  },
+});
+```
+
+### Available Adapters
+
+- localStorageAdapter
+- sessionStorageAdapter
+- cookieStorageAdapter
+
+You can also create custom adapters by implementing the storage interface.
 
 ---
 
@@ -110,11 +152,12 @@ Check for any permission in a list:
 ## 🧠 Programmatic Access
 
 ```ts
-const { setUserRoles, hasPermission } = useRBAC();
+import { inject } from 'vue';
+import type { RBAC } from '@nangazaki/vue-rbac';
 
-setUserRoles("admin")
+const rbac = inject<RBAC>('rbac');
 
-if (hasPermission('posts:create')) {
+if (rbac?.hasPermission('posts:create')) {
   console.log('User can create posts');
 }
 ```
@@ -177,8 +220,8 @@ declare module 'vue' {
 ## 🛠 Development
 
 ```bash
-pnpm install
-pnpm build
+npm install
+npm run dev
 ```
 
 ---
