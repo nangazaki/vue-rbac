@@ -1,22 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ES2018",                   
-    "module": "ESNext",                  
+    "target": "ES2018",
+    "module": "ESNext",
     "moduleResolution": "node",
-    "declaration": true,                  
+    "declaration": true,
     "outDir": "./dist",
-    "rootDir": ".",                       
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ES2019", "DOM"],             
+    "lib": [
+      "ES2019",
+      "DOM"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]                        
+      "@/*": [
+        "*"
+      ]
     },
-    "resolveJsonModule": true,            
-    "allowJs": false                      
+    "types": [
+      "vitest"
+    ],
+    "resolveJsonModule": true,
+    "allowJs": false
   },
   "include": [
     "index.ts",
@@ -25,13 +33,13 @@
     "core/**/*.ts",
     "config/**/*.ts",
     "loaders/**/*.ts",
-    "composables/**/*.ts",               
+    "composables/**/*.ts",
     "types/**/*.ts",
     "utils/**/*.ts"
   ],
   "typeRoots": [
-    "node_modules/@types",               
-    "types"                              
+    "node_modules/@types",
+    "types"
   ],
   "exclude": [
     "node_modules",
