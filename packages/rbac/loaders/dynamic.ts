@@ -1,25 +1,14 @@
+import { logger } from "@/utils/logger";
 import type { RBACConfig, RBACState, RolesConfig } from "../types/index";
 
 /**
- * Loads RBAC configuration from a remote endpoint and updates the state.
- * 
+ * Loads RBAC configuration dynamically using a user-provided resolver.
+ *
  * @param state - The current RBAC state object to be updated
- * @param options - Required configuration options including API endpoint and fetch options
+ * @param options - RBAC configuration including the resolver function
  * @param mergeWithExisting - When true, merges the loaded config with existing roles. When false, replaces entirely
  * @returns Promise resolving to the updated roles configuration
- * @throws {Error} When the fetch request fails or returns a non-ok status
- * 
- * @example
- * ```typescript
- * const state = createRBACState();
- * const options = {
- *   apiEndpoint: 'https://api.example.com/rbac',
- *   fetchOptions: { headers: { 'Authorization': 'Bearer token' } },
- *   transformResponse: (data) => data
- * };
- * 
- * const roles = await loadDynamicConfig(state, options);
- * ```
+ * @throws Error if configuration loading fails or no valid loader is provided
  */
 export async function loadDynamicConfig(
   state: RBACState,
@@ -27,31 +16,48 @@ export async function loadDynamicConfig(
   mergeWithExisting = false
 ): Promise<RolesConfig> {
   state.isLoading = true;
-  
+
   try {
-    const response = await fetch(options.apiEndpoint, options.fetchOptions);
-    if (!response.ok) {
-      throw new Error(`Failed to load configuration: ${response.status} ${response.statusText}`);
+    let roles: RolesConfig = {};
+
+    if (typeof options.fetchRoles === "function") {
+      roles = await options.fetchRoles();
+    } else if (options.apiEndpoint) {
+      logger.warn("`apiEndpoint` is deprecated, use `fetchRoles` instead");
+
+      const response = await fetch(options.apiEndpoint, options.fetchOptions);
+      if (!response.ok) {
+        logger.error(
+          `Failed to load configuration: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      const transformed = options.transformResponse(data);
+      roles = transformed.roles;
     }
-    
-    const data = await response.json();
-    const transformed = options.transformResponse(data);
-    
+
+    if (!roles) {
+      logger.error(
+        "No valid configuration loader provided (fetchRoles or apiEndpoint)"
+      );
+    }
+
     if (mergeWithExisting) {
       // Hybrid Mode: merge with existing configuration
       state.roles = {
         ...state.roles,
-        ...transformed.roles
+        ...roles,
       };
     } else {
       // Dynamic Mode: completely replace
-      state.roles = transformed.roles;
+      state.roles = roles;
     }
-    
+
     state.isInitialized = true;
     return state.roles;
   } catch (error) {
-    console.error('Error loading RBAC configuration:', error);
+    logger.error("Error loading RBAC configuration:", error);
     throw error;
   } finally {
     state.isLoading = false;

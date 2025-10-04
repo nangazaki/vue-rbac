@@ -14,9 +14,24 @@ export interface FetchOptions extends RequestInit {}
 export interface RBACConfig {
   roles?: RolesConfig;
   mode?: ConfigMode;
+
+  /**
+   * (Deprecated) API Endpoit to fetch roles
+   * ⚠️ Use only for compatibility on olders versions
+   */
   apiEndpoint?: string;
+
+  /**
+   * (Deprecated) Options to fetch when `apiEndpoint` is used
+   */
   fetchOptions?: FetchOptions;
+
+  /**
+   * (Deprecated) transform the response
+   */
   transformResponse?: (data: any) => { roles: RolesConfig };
+
+  fetchRoles?: (ctx?: any) => Promise<RolesConfig> | RolesConfig;
   autoInit?: boolean;
   storage: StorageAdapter;
   storageKey?: string;

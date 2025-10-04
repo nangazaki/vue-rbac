@@ -1,7 +1,5 @@
 import type { DirectiveBinding, VNode } from "vue";
-import type {
-  DirectiveElementData
-} from "./types/directives.types";
+import type { DirectiveElementData } from "./types/directives.types";
 import { RBAC } from "./types/index";
 import { checkAccess } from "./utils/access-check";
 
@@ -9,7 +7,7 @@ export function createRBACDirective(rbac: RBAC) {
   const originalElements = new WeakMap<HTMLElement, DirectiveElementData>();
 
   return {
-    beforeMount(el: HTMLElement, binding: DirectiveBinding, vnode: VNode) {
+    beforeMount(el: HTMLElement, binding: DirectiveBinding, _vnode: VNode) {
       const hasAccess = checkAccess(binding, rbac);
 
       if (!hasAccess) {
@@ -31,7 +29,7 @@ export function createRBACDirective(rbac: RBAC) {
       const data = originalElements.get(el);
 
       if (!hasAccess && el.parentNode) {
-        const parent = el.parentNode;
+        const _parent = el.parentNode;
         originalElements.set(el, {
           parent: el.parentNode,
           nextSibling: el.nextSibling,
