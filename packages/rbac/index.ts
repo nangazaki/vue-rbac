@@ -8,6 +8,8 @@ import { RBAC_SYMBOL } from "./symbols";
 
 export * from "./types";
 export * from "./composables";
+export * from "./storage";
+
 export { LogLevel };
 
 export const VueRBAC: Plugin = {
