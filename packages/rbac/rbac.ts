@@ -14,6 +14,7 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
   const storageKey = options.storageKey ?? "vue-rbac@v1";
 
   const state = createStore(options.roles);
+  loadStateFromStorage();
 
   if (storage) {
     const savedRoles = storage.get<RoleKey[]>(`${storageKey}:roles`);
@@ -29,6 +30,31 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
       all.forEach((p) => perms.add(p));
     }
     userPermissions = perms;
+  }
+
+  function persistState() {
+    if (!storage) return;
+
+    const data = {
+      roles: state.roles,
+      userRoles: state.userRoles,
+    };
+
+    storage.set(storageKey, data);
+  }
+
+  function loadStateFromStorage() {
+    if (!storage) return;
+
+    const saved = storage.get<{
+      roles?: typeof state.roles;
+      userRoles?: RoleKey[];
+    }>(storageKey);
+
+    if (saved) {
+      if (saved.roles) state.roles = saved.roles;
+      if (saved.userRoles) state.userRoles = saved.userRoles;
+    }
   }
 
   const rbac: RBAC = {
@@ -54,6 +80,8 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
             );
             break;
         }
+
+        persistState();
       }
 
       computeUserPermissions();
@@ -68,8 +96,7 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
 
     setUserRoles(roles: RoleKey | RoleKey[]) {
       state.userRoles = Array.isArray(roles) ? roles : [roles];
-      if (storage)
-        storage.set(storageKey, Array.isArray(roles) ? roles : [roles]);
+      persistState();
       computeUserPermissions();
     },
 
