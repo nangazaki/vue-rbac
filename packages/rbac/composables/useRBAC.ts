@@ -1,6 +1,7 @@
 import { inject } from "vue";
 import { RBAC, type IUseRBAC } from "../types/rbac.types";
 import { RBAC_SYMBOL } from "@/symbols";
+import { logger } from "@/utils/logger";
 
 /**
  * Provides access to the RBAC (Role-Based Access Control) context and utility methods.
@@ -21,6 +22,7 @@ export function useRBAC(): IUseRBAC {
   const rbac = inject<RBAC>(RBAC_SYMBOL);
 
   if (!rbac) {
+    logger.error("RBAC context not found. Make sure the plugin is installed.");
     throw new Error(
       "[vue-rbac] RBAC context not found. Make sure the plugin is installed."
     );

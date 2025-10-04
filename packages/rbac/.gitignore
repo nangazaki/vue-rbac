@@ -1,3 +1,5 @@
 dist
 node_modules
 pnpm-lock.yaml
+
+nangazaki-vue-rbac-*

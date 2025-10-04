@@ -1,12 +1,13 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-import "./style.css";
+import "../index.css";
 
 import {
   CONFIG_MODE,
   VueRBAC,
   type VueRBACPluginOptions,
 } from "@nangazaki/vue-rbac";
+import { router } from "./routes";
 
 const app = createApp(App);
 
@@ -35,4 +36,5 @@ const rbacConfig: VueRBACPluginOptions = {
 };
 
 app.use(VueRBAC, rbacConfig);
+app.use(router)
 app.mount("#app");

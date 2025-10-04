@@ -1,3 +1,4 @@
+import { logger } from "@/utils/logger";
 import { CONFIG_MODE, type RBACConfig } from "../types/index";
 
 const VALID_MODES = [
@@ -38,7 +39,7 @@ export function validateConfig(config: Partial<RBACConfig>): RBACConfig {
       config.mode === CONFIG_MODE.HYBRID) &&
     !config.apiEndpoint
   ) {
-    console.warn(
+    logger.warn(
       "Dynamic/hybrid mode requires an apiEndpoint. Using default: /api/rbac/permissions"
     );
   }
