@@ -4,7 +4,6 @@ docs/node_modules
 lib/dist
 lib/node_modules
 lib/nangazaki-vue-rbac-*.tgz
-lib/pnpm-lock.yaml
 
 playground/node_modules
 playground/pnpm-lock.yaml
