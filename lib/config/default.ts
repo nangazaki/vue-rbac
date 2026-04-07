@@ -1,4 +1,4 @@
-import { sessionStorageAdapter } from "./../storage/session-storage";
+import { sessionStorageAdapter } from "../storage/session-storage";
 import { CONFIG_MODE, type RBACConfig } from "../types/index";
 
 /**
