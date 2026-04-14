@@ -83,4 +83,5 @@ export interface RBACConfig {
   autoInit?: boolean;
   storage: StorageAdapter;
   storageKey?: string;
+  cacheTtl?: number;
 }

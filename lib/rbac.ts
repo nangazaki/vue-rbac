@@ -1,5 +1,6 @@
 import { defaultConfig } from "./config/default";
 import { validateConfig } from "./config/schema";
+import { CacheTTL } from "./core/cache";
 import { getAllPermissionsForRole } from "./core/role";
 import { loadDynamicConfig } from "./loaders/dynamic";
 import { loadStaticConfig } from "./loaders/static";
@@ -57,6 +58,8 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
     }
   }
 
+  const cache = new CacheTTL(options.cacheTtl ?? 0);
+
   const rbac: RBAC = {
     options: options as Required<RBACConfig>,
     state,
@@ -70,14 +73,16 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
             break;
           case CONFIG_MODE.DYNAMIC:
             await loadDynamicConfig(state, options as Required<RBACConfig>);
+            cache.touch();
             break;
           case CONFIG_MODE.HYBRID:
             await loadStaticConfig(state, options as Required<RBACConfig>);
             await loadDynamicConfig(
               state,
               options as Required<RBACConfig>,
-              true
+              true,
             );
+            cache.touch();
             break;
         }
 
@@ -89,7 +94,13 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
     },
 
     async fetchRolesAndPermissions() {
+      if (cache.isValid()) {
+        computeUserPermissions();
+        return state.roles;
+      }
+
       await loadDynamicConfig(state, options as Required<RBACConfig>);
+      cache.touch();
       computeUserPermissions();
       return state.roles;
     },
@@ -114,6 +125,10 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
 
     hasAllPermissions(permissions: Permission[]): boolean {
       return permissions.every((p) => userPermissions.has(p));
+    },
+
+    invalidateCache() {
+      cache.invalidate();
     },
   };
 

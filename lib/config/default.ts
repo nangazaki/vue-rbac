@@ -19,4 +19,5 @@ export const defaultConfig: RBACConfig = {
   transformResponse: (data: any) => data,
   autoInit: true,
   storage: sessionStorageAdapter,
+  cacheTtl: 60 * 60 * 1000, // 1 hour
 };
