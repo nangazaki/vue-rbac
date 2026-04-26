@@ -1,0 +1,22 @@
+{
+  "name": "@nangazaki/vue-rbac",
+  "description": "Vue RBAC is a flexible and lightweight Role-Based Access Control (RBAC) library for Vue 3 applications. It supports static and dynamic role configurations, including role inheritance and directive-based permission control.",
+  "directories": {
+    "doc": "docs",
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nangazaki/vue-rbac.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nangazaki/vue-rbac/issues"
+  },
+  "homepage": "https://vue-rbac.nangazaki.io"
+}

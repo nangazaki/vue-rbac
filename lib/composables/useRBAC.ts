@@ -17,6 +17,7 @@ import { logger } from "@/utils/logger";
  *   - `hasAnyPermission`: Function to check if user has any of the specified permissions.
  *   - `hasPermission`: Function to check if user has a specific permission.
  *   - `hasRole`: Function to check if user has a specific role.
+ *   - `invalidateCache`: Function to invalidate the cache.
  */
 export function useRBAC(): IUseRBAC {
   const rbac = inject<RBAC>(RBAC_SYMBOL);
@@ -24,7 +25,7 @@ export function useRBAC(): IUseRBAC {
   if (!rbac) {
     logger.error("RBAC context not found. Make sure the plugin is installed.");
     throw new Error(
-      "[vue-rbac] RBAC context not found. Make sure the plugin is installed."
+      "[vue-rbac] RBAC context not found. Make sure the plugin is installed.",
     );
   }
 
@@ -35,5 +36,6 @@ export function useRBAC(): IUseRBAC {
     hasAnyPermission: rbac.hasAnyPermission,
     hasPermission: rbac.hasPermission,
     hasRole: rbac.hasRole,
+    invalidateCache: rbac.invalidateCache,
   };
 }
