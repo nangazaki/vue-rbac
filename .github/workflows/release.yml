@@ -1,0 +1,155 @@
+name: Release
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  release:
+    name: Bump, Publish e Changelog
+    runs-on: ubuntu-latest
+    
+     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # necessário para o git log do changelog
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # ── Detectar label da PR que originou este push ──────────────────
+      - name: Get merged PR label
+        id: pr_label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "closed",
+              base: "main",
+              sort: "updated",
+              direction: "desc",
+              per_page: 5,
+            })
+
+            const merged = pulls.find(
+              (pr) => pr.merge_commit_sha === context.sha
+            )
+
+            if (!merged) {
+              core.setOutput("bump", "patch") // fallback seguro
+              core.warning("No merged PR found for this commit. Defaulting to patch.")
+              return
+            }
+
+            const labels = merged.labels.map((l) => l.name)
+            const bump = ["major", "minor", "patch"].find((b) => labels.includes(b))
+
+            if (!bump) {
+              core.setOutput("bump", "patch")
+              core.warning(`No semver label found on PR #${merged.number}. Defaulting to patch.`)
+              return
+            }
+
+            core.info(`PR #${merged.number} — bump type: ${bump}`)
+            core.setOutput("bump", bump)
+
+      # ── Bump version no package.json ─────────────────────────────────
+      - name: Bump version
+        id: bump
+        run: |
+          NEW_VERSION=$(node .github/scripts/bump-version.js ${{ steps.pr_label.outputs.bump }})
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      # ── Build ─────────────────────────────────────────────────────────
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm --filter @nangazaki/vue-rbac build
+
+      # ── Gerar CHANGELOG ───────────────────────────────────────────────
+      - name: Generate CHANGELOG
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          NEW_VERSION="v${{ steps.bump.outputs.version }}"
+          DATE=$(date +%Y-%m-%d)
+
+          if [ -z "$PREV_TAG" ]; then
+            LOG=$(git log --pretty=format:"- %s (%h)" HEAD)
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" ${PREV_TAG}..HEAD)
+          fi
+
+          ENTRY="## ${NEW_VERSION} — ${DATE}\n\n${LOG}\n"
+
+          # Prepend ao CHANGELOG existente
+          if [ -f packages/lib/CHANGELOG.md ]; then
+            echo -e "${ENTRY}\n$(cat packages/lib/CHANGELOG.md)" > packages/lib/CHANGELOG.md
+          else
+            echo -e "${ENTRY}" > packages/lib/CHANGELOG.md
+          fi
+
+      # ── Commit e tag ──────────────────────────────────────────────────
+      - name: Commit & tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add packages/lib/package.json packages/lib/CHANGELOG.md
+          git commit -m "chore: release v${{ steps.bump.outputs.version }} [skip ci]"
+          git tag "v${{ steps.bump.outputs.version }}"
+          git push origin main --follow-tags
+
+      # ── Publicar no npm ───────────────────────────────────────────────
+      - name: Publish to npm
+        working-directory: packages/lib
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      # ── Publicar no GitHub Packages ───────────────────────────────────
+      - name: Setup Node for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://npm.pkg.github.com
+
+      - name: Publish to GitHub Packages
+        working-directory: packages/lib
+        run: pnpm publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── GitHub Release ────────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs")
+            const changelog = fs.readFileSync("packages/lib/CHANGELOG.md", "utf-8")
+            const firstEntry = changelog.split(/\n## /)[1]
+            const body = firstEntry ? "## " + firstEntry.trim() : "See CHANGELOG.md"
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: "v${{ steps.bump.outputs.version }}",
+              name: "v${{ steps.bump.outputs.version }}",
+              body,
+            })
