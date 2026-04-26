@@ -3,21 +3,22 @@ import { mount } from "@vue/test-utils";
 import { h } from "vue";
 import { RbacGuard } from "../components";
 
-import type { RBAC } from "../types/rbac.types";
+import type { IUseRBAC } from "../types/rbac.types";
 
 vi.mock("../composables/index", () => ({
   useRBAC: () => mockRbac,
 }));
 
-let mockRbac: RBAC;
+let mockRbac: IUseRBAC;
 
 beforeEach(() => {
   mockRbac = {
+    state: { isLoading: false, isInitialized: true, roles: {}, userRoles: [] },
     hasPermission: vi.fn(),
     hasRole: vi.fn(),
     hasAnyPermission: vi.fn(),
     hasAllPermissions: vi.fn(),
-  } as unknown as RBAC;
+  } as unknown as IUseRBAC;
 });
 
 const defaultSlot = () => h("span", { class: "content" }, "conteúdo protegido");
@@ -283,9 +284,81 @@ describe("RbacGuard", () => {
         props: { permission: "posts:edit" },
       });
 
-      console.log(wrapper.html());
+      expect(wrapper.html()).toBe("");
+    });
+  });
+
+  describe("slot: loading", () => {
+    const loadingSlot = () => h("span", { class: "loading" }, "a carregar...");
+
+    it("should render loading slot when state.isLoading is true", () => {
+      mockRbac.state.isLoading = true;
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const wrapper = mount(RbacGuard, {
+        props: { permission: "posts:edit" },
+        slots: { default: defaultSlot, loading: loadingSlot },
+      });
+
+      expect(wrapper.find(".loading").exists()).toBe(true);
+      expect(wrapper.find(".content").exists()).toBe(false);
+    });
+
+    it("should render nothing when loading and no loading slot is provided", () => {
+      mockRbac.state.isLoading = true;
+
+      const wrapper = mount(RbacGuard, {
+        props: { permission: "posts:edit" },
+        slots: { default: defaultSlot },
+      });
 
       expect(wrapper.html()).toBe("");
+    });
+
+    it("should not render loading slot once loading is complete", () => {
+      mockRbac.state.isLoading = false;
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const wrapper = mount(RbacGuard, {
+        props: { permission: "posts:edit" },
+        slots: { default: defaultSlot, loading: loadingSlot },
+      });
+
+      expect(wrapper.find(".loading").exists()).toBe(false);
+      expect(wrapper.find(".content").exists()).toBe(true);
+    });
+  });
+
+  describe("multiple access props", () => {
+    it("should warn when more than one access prop is provided", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.mocked(mockRbac.hasRole).mockReturnValue(true);
+
+      mount(RbacGuard, {
+        props: { role: "admin", permission: "posts:edit" },
+        slots: { default: defaultSlot },
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining("Multiple access props detected")
+      );
+
+      warnSpy.mockRestore();
+    });
+
+    it("should only evaluate the first prop when multiple are provided", () => {
+      vi.mocked(mockRbac.hasRole).mockReturnValue(true);
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(false);
+
+      const wrapper = mount(RbacGuard, {
+        props: { role: "admin", permission: "posts:edit" },
+        slots: { default: defaultSlot },
+      });
+
+      // role is evaluated first — grants access despite permission returning false
+      expect(wrapper.find(".content").exists()).toBe(true);
+      expect(mockRbac.hasPermission).not.toHaveBeenCalled();
     });
   });
 

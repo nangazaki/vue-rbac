@@ -1,5 +1,9 @@
 import { defineComponent, h, type PropType } from "vue";
 import { useRBAC } from "../composables/index";
+import { logger } from "../utils/logger";
+
+const ACCESS_PROPS = ["role", "permission", "any", "all", "not"] as const;
+type AccessProp = (typeof ACCESS_PROPS)[number];
 
 export const RbacGuard = defineComponent({
   name: "RbacGuard",
@@ -25,6 +29,11 @@ export const RbacGuard = defineComponent({
       default: undefined,
     },
 
+    /**
+     * Denies access when the user has the specified role OR permission.
+     * Accepts a string or array of strings. Each value is checked against
+     * both roles and permissions — access is blocked if any match is found.
+     */
     not: {
       type: [String, Array] as PropType<string | string[]>,
       default: undefined,
@@ -34,15 +43,27 @@ export const RbacGuard = defineComponent({
   setup(props, { slots }) {
     const rbac = useRBAC();
 
+    function warnMultipleProps(): void {
+      const active = ACCESS_PROPS.filter(
+        (p) => props[p as AccessProp] !== undefined
+      );
+      if (active.length > 1) {
+        logger.warn(
+          `[RbacGuard] Multiple access props detected: [${active.join(", ")}]. ` +
+            `Only "${active[0]}" will be evaluated. Use a single prop per guard.`
+        );
+      }
+    }
+
     function isAllowed(): boolean {
+      warnMultipleProps();
+
       if (props.role !== undefined) {
-        const roles = toArray(props.role);
-        return roles.some((r) => rbac.hasRole(r));
+        return toArray(props.role).some((r) => rbac.hasRole(r));
       }
 
       if (props.permission !== undefined) {
-        const permissions = toArray(props.permission);
-        return permissions.every((p) => rbac.hasPermission(p));
+        return toArray(props.permission).every((p) => rbac.hasPermission(p));
       }
 
       if (props.any !== undefined) {
@@ -54,14 +75,19 @@ export const RbacGuard = defineComponent({
       }
 
       if (props.not !== undefined) {
-        const values = toArray(props.not);
-        return !values.some((v) => rbac.hasRole(v) || rbac.hasPermission(v));
+        return !toArray(props.not).some(
+          (v) => rbac.hasRole(v) || rbac.hasPermission(v)
+        );
       }
 
       return false;
     }
 
     return () => {
+      if (rbac.state.isLoading) {
+        return slots.loading?.() ?? null;
+      }
+
       if (isAllowed()) {
         return slots.default?.();
       }
