@@ -1,6 +1,37 @@
 import { logger } from "@/utils/logger";
 import type { RBACConfig, RBACState, RolesConfig } from "../types/index";
 
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  attempts: number,
+  delay: number,
+  backoff: number
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < attempts) {
+        const wait = delay * Math.pow(backoff, attempt - 1);
+        logger.warn(
+          `RBAC dynamic load failed (attempt ${attempt}/${attempts}). Retrying in ${wait}ms...`
+        );
+        await sleep(wait);
+      }
+    }
+  }
+
+  throw lastError;
+}
+
 /**
  * Loads RBAC configuration dynamically using a user-provided resolver.
  *
@@ -17,24 +48,26 @@ export async function loadDynamicConfig(
 ): Promise<RolesConfig> {
   state.isLoading = true;
 
+  const { attempts = 3, delay = 1000, backoff = 2 } = options.retry ?? {};
+
   try {
     let roles: RolesConfig = {};
 
     if (typeof options.fetchRoles === "function") {
-      roles = await options.fetchRoles();
+      roles = await withRetry(() => Promise.resolve(options.fetchRoles()), attempts, delay, backoff);
     } else if (options.apiEndpoint) {
       logger.warn("`apiEndpoint` is deprecated, use `fetchRoles` instead");
 
-      const response = await fetch(options.apiEndpoint, options.fetchOptions);
-      if (!response.ok) {
-        logger.error(
-          `Failed to load configuration: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      const transformed = options.transformResponse(data);
-      roles = transformed.roles;
+      roles = await withRetry(async () => {
+        const response = await fetch(options.apiEndpoint, options.fetchOptions);
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load configuration: ${response.status} ${response.statusText}`
+          );
+        }
+        const data = await response.json();
+        return options.transformResponse(data).roles;
+      }, attempts, delay, backoff);
     }
 
     if (!roles) {
@@ -44,13 +77,8 @@ export async function loadDynamicConfig(
     }
 
     if (mergeWithExisting) {
-      // Hybrid Mode: merge with existing configuration
-      state.roles = {
-        ...state.roles,
-        ...roles,
-      };
+      state.roles = { ...state.roles, ...roles };
     } else {
-      // Dynamic Mode: completely replace
       state.roles = roles;
     }
 

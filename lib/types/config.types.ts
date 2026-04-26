@@ -84,4 +84,14 @@ export interface RBACConfig {
   storage: StorageAdapter;
   storageKey?: string;
   cacheTtl?: number;
+  retry?: RetryConfig;
+}
+
+export interface RetryConfig {
+  /** Total number of attempts (initial + retries). Default: 3 */
+  attempts?: number;
+  /** Base delay in ms between attempts. Default: 1000 */
+  delay?: number;
+  /** Exponential backoff multiplier applied per attempt. Default: 2 */
+  backoff?: number;
 }
