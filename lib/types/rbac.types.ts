@@ -24,6 +24,7 @@ export interface RBAC {
   hasRole(role: RoleKey): boolean;
   hasAnyPermission(permissions: Permission[]): boolean;
   hasAllPermissions(permissions: Permission[]): boolean;
+  invalidateCache(): void;
 }
 
 export interface IUseRBAC {
@@ -33,4 +34,5 @@ export interface IUseRBAC {
   hasPermission(permission: Permission): boolean;
   hasAnyPermission(permissions: Permission[]): boolean;
   hasAllPermissions(permissions: Permission[]): boolean;
+  invalidateCache(): void;
 }

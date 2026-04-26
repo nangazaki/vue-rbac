@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { createRBAC, CONFIG_MODE } from "../index";
 import { validateConfig } from "../config/schema";
+import * as dynamicLoader from "../loaders/dynamic";
 
 describe("Configuration Modes", () => {
   const mockStorage = {
@@ -224,6 +225,151 @@ describe("Configuration Modes", () => {
           },
         })
       ).not.toThrow();
+    });
+  });
+
+  describe("Retry Mechanism", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("should succeed on a later attempt after transient failures", async () => {
+      const fetchRoles = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("network error"))
+        .mockRejectedValueOnce(new Error("network error"))
+        .mockResolvedValueOnce({ admin: { permissions: ["admin:all"] } });
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.DYNAMIC,
+        storage: mockStorage,
+        fetchRoles,
+        retry: { attempts: 3, delay: 100, backoff: 1 },
+      });
+
+      const initPromise = rbac.init();
+      await vi.runAllTimersAsync();
+      await initPromise;
+
+      expect(fetchRoles).toHaveBeenCalledTimes(3);
+      expect(rbac.state.isInitialized).toBe(true);
+      expect(rbac.state.roles.admin.permissions).toContain("admin:all");
+    });
+
+    it("should throw after all attempts are exhausted", async () => {
+      const fetchRoles = vi.fn().mockRejectedValue(new Error("persistent error"));
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.DYNAMIC,
+        storage: mockStorage,
+        fetchRoles,
+        retry: { attempts: 3, delay: 100, backoff: 1 },
+      });
+
+      const initPromise = rbac.init();
+      initPromise.catch(() => {}); // prevent unhandled rejection before expect
+      await vi.runAllTimersAsync();
+
+      await expect(initPromise).rejects.toThrow("persistent error");
+      expect(fetchRoles).toHaveBeenCalledTimes(3);
+    });
+
+    it("should not retry when attempts is 1", async () => {
+      const fetchRoles = vi.fn().mockRejectedValue(new Error("fail"));
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.DYNAMIC,
+        storage: mockStorage,
+        fetchRoles,
+        retry: { attempts: 1, delay: 100, backoff: 2 },
+      });
+
+      const initPromise = rbac.init();
+      initPromise.catch(() => {}); // prevent unhandled rejection before expect
+      await vi.runAllTimersAsync();
+
+      await expect(initPromise).rejects.toThrow("fail");
+      expect(fetchRoles).toHaveBeenCalledTimes(1);
+    });
+
+    it("should apply exponential backoff between attempts", async () => {
+      const fetchRoles = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("fail 1"))
+        .mockRejectedValueOnce(new Error("fail 2"))
+        .mockResolvedValueOnce({ viewer: { permissions: ["view"] } });
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.DYNAMIC,
+        storage: mockStorage,
+        fetchRoles,
+        retry: { attempts: 3, delay: 500, backoff: 2 },
+      });
+
+      const initPromise = rbac.init();
+
+      // First attempt fails immediately, then waits 500ms (500 * 2^0)
+      await vi.advanceTimersByTimeAsync(499);
+      expect(fetchRoles).toHaveBeenCalledTimes(1);
+
+      await vi.advanceTimersByTimeAsync(1);
+      // Second attempt fires, fails, waits 1000ms (500 * 2^1)
+      await vi.advanceTimersByTimeAsync(999);
+      expect(fetchRoles).toHaveBeenCalledTimes(2);
+
+      await vi.advanceTimersByTimeAsync(1);
+      // Third attempt fires and succeeds
+      await initPromise;
+      expect(fetchRoles).toHaveBeenCalledTimes(3);
+      expect(rbac.state.isInitialized).toBe(true);
+    });
+
+    it("should use default retry config when not specified", async () => {
+      const fetchRoles = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("fail"))
+        .mockResolvedValueOnce({ admin: { permissions: ["admin:all"] } });
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.DYNAMIC,
+        storage: mockStorage,
+        fetchRoles,
+        // no retry config — defaults: attempts=3, delay=1000, backoff=2
+      });
+
+      const initPromise = rbac.init();
+      await vi.runAllTimersAsync();
+      await initPromise;
+
+      expect(fetchRoles).toHaveBeenCalledTimes(2);
+      expect(rbac.state.isInitialized).toBe(true);
+    });
+
+    it("should also retry in HYBRID mode", async () => {
+      const fetchRoles = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("fail"))
+        .mockResolvedValueOnce({ dynamicRole: { permissions: ["dyn:perm"] } });
+
+      const rbac = createRBAC({
+        mode: CONFIG_MODE.HYBRID,
+        storage: mockStorage,
+        roles: { staticRole: { permissions: ["static:perm"] } },
+        fetchRoles,
+        retry: { attempts: 2, delay: 100, backoff: 1 },
+      });
+
+      const initPromise = rbac.init();
+      await vi.runAllTimersAsync();
+      await initPromise;
+
+      expect(fetchRoles).toHaveBeenCalledTimes(2);
+      expect(rbac.state.roles.staticRole).toBeDefined();
+      expect(rbac.state.roles.dynamicRole).toBeDefined();
     });
   });
 
