@@ -57,6 +57,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           node scripts/bump-version.mjs ${{ github.event.inputs.release_type }}
 
+      - name: Sync README
+        run: cp ../README.md README.md
+
       - name: Build
         run: pnpm build
 
