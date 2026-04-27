@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.7] (2026-04-27)
+- <!-- describe changes here -->
+
 ## [1.0.6] (2026-04-27)
 ### Added
 - TTL-based caching for dynamic configuration
