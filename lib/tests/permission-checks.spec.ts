@@ -163,6 +163,75 @@ describe("Permission Checks", () => {
     });
   });
 
+  describe("Wildcard Permissions", () => {
+    it("should grant access when role has resource:* and permission is resource:action", async () => {
+      const rbacWild = createRBAC({
+        mode: CONFIG_MODE.STATIC,
+        storage: mockStorage,
+        roles: { superadmin: { permissions: ["users:*"] } },
+      })
+      await rbacWild.init()
+      rbacWild.setUserRoles(["superadmin"])
+
+      expect(rbacWild.hasPermission("users:create")).toBe(true)
+      expect(rbacWild.hasPermission("users:delete")).toBe(true)
+      expect(rbacWild.hasPermission("users:anything")).toBe(true)
+    })
+
+    it("should not grant access to other resources via wildcard", async () => {
+      const rbacWild = createRBAC({
+        mode: CONFIG_MODE.STATIC,
+        storage: mockStorage,
+        roles: { superadmin: { permissions: ["users:*"] } },
+      })
+      await rbacWild.init()
+      rbacWild.setUserRoles(["superadmin"])
+
+      expect(rbacWild.hasPermission("posts:create")).toBe(false)
+    })
+
+    it("should work with hasAnyPermission when wildcard matches one", async () => {
+      const rbacWild = createRBAC({
+        mode: CONFIG_MODE.STATIC,
+        storage: mockStorage,
+        roles: { superadmin: { permissions: ["users:*"] } },
+      })
+      await rbacWild.init()
+      rbacWild.setUserRoles(["superadmin"])
+
+      expect(rbacWild.hasAnyPermission(["users:create", "posts:edit"])).toBe(true)
+    })
+
+    it("should work with hasAllPermissions when wildcard covers all", async () => {
+      const rbacWild = createRBAC({
+        mode: CONFIG_MODE.STATIC,
+        storage: mockStorage,
+        roles: { superadmin: { permissions: ["users:*"] } },
+      })
+      await rbacWild.init()
+      rbacWild.setUserRoles(["superadmin"])
+
+      expect(rbacWild.hasAllPermissions(["users:create", "users:delete"])).toBe(true)
+      expect(rbacWild.hasAllPermissions(["users:create", "posts:edit"])).toBe(false)
+    })
+
+    it("should work with inherited wildcard permissions", async () => {
+      const rbacWild = createRBAC({
+        mode: CONFIG_MODE.STATIC,
+        storage: mockStorage,
+        roles: {
+          superadmin: { permissions: ["users:*"], inherits: ["editor"] },
+          editor: { permissions: ["posts:edit"] },
+        },
+      })
+      await rbacWild.init()
+      rbacWild.setUserRoles(["superadmin"])
+
+      expect(rbacWild.hasPermission("users:create")).toBe(true)
+      expect(rbacWild.hasPermission("posts:edit")).toBe(true)
+    })
+  })
+
   describe("Multiple Roles", () => {
     it("should combine permissions from multiple roles", async () => {
       rbac.setUserRoles(["viewer", "guest"]);

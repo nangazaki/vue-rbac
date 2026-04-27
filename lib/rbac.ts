@@ -112,7 +112,9 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
     },
 
     hasPermission(permission: Permission): boolean {
-      return userPermissions.has(permission);
+      if (userPermissions.has(permission)) return true;
+      const resource = permission.split(":")[0];
+      return userPermissions.has(`${resource}:*` as Permission);
     },
 
     hasRole(role: RoleKey): boolean {
@@ -120,11 +122,11 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
     },
 
     hasAnyPermission(permissions: Permission[]): boolean {
-      return permissions.some((p) => userPermissions.has(p));
+      return permissions.some((p) => rbac.hasPermission(p));
     },
 
     hasAllPermissions(permissions: Permission[]): boolean {
-      return permissions.every((p) => userPermissions.has(p));
+      return permissions.every((p) => rbac.hasPermission(p));
     },
 
     invalidateCache() {
