@@ -49,7 +49,10 @@
     "lint:fix": "eslint src --ext .ts --fix",
     "prepublishOnly": "pnpm build",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "release:patch": "node scripts/bump-version.mjs patch",
+    "release:minor": "node scripts/bump-version.mjs minor",
+    "release:major": "node scripts/bump-version.mjs major"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.3",
