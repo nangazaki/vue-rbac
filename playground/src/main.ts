@@ -5,6 +5,7 @@ import "../index.css";
 import {
   CONFIG_MODE,
   VueRBAC,
+  cookieStorageAdapter,
   type VueRBACPluginOptions,
 } from "@nangazaki/vue-rbac";
 import { router } from "./routes";
@@ -14,6 +15,7 @@ const app = createApp(App);
 const rbacConfig: VueRBACPluginOptions = {
   config: {
     mode: CONFIG_MODE.STATIC,
+    storage: cookieStorageAdapter,
     autoInit: true,
     roles: {
       admin: {
@@ -36,5 +38,5 @@ const rbacConfig: VueRBACPluginOptions = {
 };
 
 app.use(VueRBAC, rbacConfig);
-app.use(router)
+app.use(router);
 app.mount("#app");

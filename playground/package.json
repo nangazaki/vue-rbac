@@ -9,7 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@nangazaki/vue-rbac": "^1.0.5",
+    "@nangazaki/vue-rbac": "^1.0.7",
+    "@phosphor-icons/vue": "^2.2.1",
     "@tailwindcss/vite": "^4.1.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
