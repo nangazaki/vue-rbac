@@ -228,5 +228,5 @@ npm run dev
 
 ## 📃 License
 
-MIT License © 2025 [@nangazaki](https://github.com/nangazaki)
+MIT License © 2026 [@nangazaki](https://github.com/nangazaki)
 
