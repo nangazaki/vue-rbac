@@ -36,5 +36,7 @@ export const VueRBAC: Plugin = {
 };
 
 export { createRBAC };
+export { useRBACRouter } from './utils/rbac-router';
+export type { RBACRouteMeta, RBACRouterOptions } from './utils/rbac-router';
 
 export default VueRBAC;
