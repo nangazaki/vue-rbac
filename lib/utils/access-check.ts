@@ -82,7 +82,8 @@ export function checkAccess(binding: DirectiveBinding, rbac: RBAC): boolean {
       if (
         Array.isArray(value) &&
         value.length === 2 &&
-        typeof value[0] === "string"
+        typeof value[0] === "string" &&
+        (typeof value[1] === "string" || typeof value[1] === "number")
       ) {
         hasAccess = rbac.hasPermission(value[0], value[1]);
       } else {

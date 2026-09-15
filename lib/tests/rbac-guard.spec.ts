@@ -161,6 +161,17 @@ describe("RbacGuard", () => {
       expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:archive", 42);
     });
 
+    it("should treat a resource of 0 as present, not absent", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      mount(RbacGuard, {
+        props: { permission: "entries:archive", resource: 0 },
+        slots: { default: defaultSlot },
+      });
+
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:archive", 0);
+    });
+
     it("should warn and fall back to array (AND) semantics when permission is an array", () => {
       const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       vi.mocked(mockRbac.hasPermission).mockReturnValue(true);

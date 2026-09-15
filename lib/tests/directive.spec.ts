@@ -256,6 +256,22 @@ describe("v-rbac Directive", () => {
 
       expect(result).toBe(false);
     });
+
+    it("should deny access and not call hasPermission when resourceId is undefined", () => {
+      const binding = createBinding(["entries:write", undefined], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+      expect(mockRbac.hasPermission).not.toHaveBeenCalled();
+    });
+
+    it("should deny access and not call hasPermission when resourceId is null", () => {
+      const binding = createBinding(["entries:write", null], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+      expect(mockRbac.hasPermission).not.toHaveBeenCalled();
+    });
   });
 
   describe("Modifier-based Check", () => {

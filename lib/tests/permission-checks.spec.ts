@@ -110,6 +110,16 @@ describe("Permission Checks", () => {
       expect(rbac.hasPermission("posts:create")).toBe(true);
       expect(rbac.hasPermission("posts:create", undefined)).toBe(true);
     });
+
+    it("should treat resourceId 0 as a real value, not as omitted", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      // editor has the unscoped "posts:create" permission but not
+      // "posts:create:0" — if resourceId=0 were ever mistaken for
+      // "omitted" (e.g. via a `!resourceId` check), this would
+      // wrongly return true by falling back to the unscoped check.
+      expect(rbac.hasPermission("posts:create", 0)).toBe(false);
+    });
   });
 
   describe("hasRole()", () => {
