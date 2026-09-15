@@ -194,7 +194,7 @@ A component alternative to directives with slot-based fallback and loading state
 | `resource`   | `string \| number`      | Resource id to scope `permission` to (requires `permission` to be a single string, not an array) |
 | `not`        | `string \| string[]`    | Access denied if user has any of these           |
 
-> Only one prop is evaluated at a time. Priority order: `permission` → `role` → `any` → `all` → `not`.
+> Only one prop is evaluated at a time. Priority order: `role` → `permission` → `any` → `all` → `not`.
 
 ### Slots
 
