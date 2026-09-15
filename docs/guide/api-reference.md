@@ -73,7 +73,7 @@ An object implementing the RBAC interface.
 | `init()`                              | `(): Promise<RolesConfig>`                       | Load roles & permissions (static/dynamic).   |
 | `fetchRolesAndPermissions()`          | `(): Promise<RolesConfig>`                       | Force dynamic reload from API.               |
 | `setUserRoles(roles: RoleKey \| RoleKey[])` | `void`                                      | Assign one or more roles to the current user.|
-| `hasPermission(permission: Permission)`     | `(permission: string) => boolean`            | Check a single permission.                   |
+| `hasPermission(permission: Permission, resourceId?: string \| number)` | `(permission: string, resourceId?: string \| number) => boolean` | Check a permission. Pass `resourceId` to check a resource-scoped permission (matched as `` `${permission}:${resourceId}` ``). |
 | `hasAnyPermission(permissions: Permission[])` | `(permissions: string[]) => boolean`      | True if user has at least one.               |
 | `hasAllPermissions(permissions: Permission[])` | `(permissions: string[]) => boolean`      | True if user has every permission.           |
 | `hasRole(role: RoleKey)`              | `(role: string) => boolean`                     | Check if user has a specific role.           |
@@ -150,6 +150,7 @@ Control element visibility based on roles/permissions
 | `any`      | `string[] \| string` | True if user has _any_ of the permissions         |
 | `all`      | `string[] \| string` | True if user has _all_ of the permissions         |
 | `not`      | `string[] \| string` | Negates the check (no permission or role)         |
+| `resource` | `[string, string \| number]` | Checks a resource-scoped permission: `[action, resourceId]` |
 
 #### Usage
 
@@ -159,7 +160,50 @@ Control element visibility based on roles/permissions
 <div v-rbac:any="['edit','delete']">Edit/Delete</div>
 <div v-rbac:all="['read','write']">Read & Write</div>
 <div v-rbac:not="'delete'">Cannot Delete</div>
+<div v-rbac:resource="['entries:write', sectionId]">Edit Section</div>
 ```
+
+## Component: `<RbacGuard>`
+
+A component alternative to directives with slot-based fallback and loading states.
+
+```vue
+<template>
+  <RbacGuard permission="users:create">
+    <CreateUserForm />
+
+    <template #fallback>
+      <p>Access denied.</p>
+    </template>
+
+    <template #loading>
+      <span>Loading...</span>
+    </template>
+  </RbacGuard>
+</template>
+```
+
+### Props
+
+| Prop         | Type                    | Description                                      |
+| ------------ | ----------------------- | ------------------------------------------------ |
+| `permission` | `string \| string[]`    | All listed permissions required (AND)            |
+| `role`       | `string \| string[]`    | Any of the listed roles required (OR)            |
+| `any`        | `string \| string[]`    | At least one permission required (OR)            |
+| `all`        | `string \| string[]`    | All permissions required (AND)                   |
+| `resource`   | `string \| number`      | Resource id to scope `permission` to (requires `permission` to be a single string, not an array) |
+| `not`        | `string \| string[]`    | Access denied if user has any of these           |
+
+> Only one prop is evaluated at a time. Priority order: `permission` → `role` → `any` → `all` → `not`.
+
+### Slots
+
+| Slot      | Description                              |
+| --------- | ---------------------------------------- |
+| `default` | Rendered when access is granted          |
+| `fallback`| Rendered when access is denied           |
+| `loading` | Rendered while roles are being loaded    |
+
 
 ## Composable: `useRBAC()`
 
@@ -175,6 +219,36 @@ if (hasPermission('edit')) { … }
 ```
 
 **Returns**: the full RBAC instance.
+
+
+## Resource-Scoped Permissions
+
+Grant access to specific resource instances by listing the fully composed
+permission string (`action:resourceId`) in a role's `permissions` array:
+
+```ts
+roles: {
+  editor: {
+    permissions: ['entries:write:section-123', 'entries:write:section-456']
+  }
+}
+```
+
+Then check it by passing the resource id as a second argument, wherever
+`hasPermission` is used:
+
+```ts
+rbac.hasPermission('entries:write', 'section-123') // true
+rbac.hasPermission('entries:write', 'section-999') // false
+```
+
+```vue
+<div v-rbac:resource="['entries:write', sectionId]">Edit Section</div>
+
+<RbacGuard permission="entries:write" :resource="sectionId">
+  <EditSectionForm />
+</RbacGuard>
+```
 
 
 ## Symbols
