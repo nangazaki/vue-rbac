@@ -62,6 +62,14 @@ app.mount('#app')
 </div>
 ```
 
+### Resource-scoped permission
+
+```vue
+<div v-rbac:resource="['entries:write', sectionId]">
+  Edit this section
+</div>
+```
+
 ## 3. Composition API with `useRBAC`
 
 ```ts
@@ -152,6 +160,42 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+```
+
+## 8. RbacGuard Component
+
+Use `<RbacGuard>` for slot-based access control with fallback and loading states:
+
+```vue
+<template>
+  <!-- permission check -->
+  <RbacGuard permission="users:create">
+    <CreateUserForm />
+    <template #fallback><p>Access denied.</p></template>
+  </RbacGuard>
+
+  <!-- role check -->
+  <RbacGuard role="admin">
+    <AdminPanel />
+    <template #fallback><p>Admins only.</p></template>
+  </RbacGuard>
+
+  <!-- OR — any of these permissions -->
+  <RbacGuard :any="['posts:edit', 'posts:create']">
+    <EditorTools />
+  </RbacGuard>
+
+  <!-- negation -->
+  <RbacGuard not="users:delete">
+    <p>You are not an admin.</p>
+  </RbacGuard>
+
+  <!-- resource-scoped permission -->
+  <RbacGuard permission="entries:write" :resource="sectionId">
+    <EditSectionForm />
+    <template #fallback><p>You can't edit this section.</p></template>
+  </RbacGuard>
+</template>
 ```
 
 ---

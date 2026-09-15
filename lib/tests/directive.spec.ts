@@ -203,6 +203,77 @@ describe("v-rbac Directive", () => {
     });
   });
 
+  describe("Resource Permission Check (v-rbac:resource=\"[action, id]\")", () => {
+    it("should grant access when the composed permission matches", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const binding = createBinding(["entries:write", "section-123"], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith(
+        "entries:write",
+        "section-123"
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should deny access when the composed permission does not match", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(false);
+
+      const binding = createBinding(["entries:write", "section-999"], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+    });
+
+    it("should support a numeric resourceId", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const binding = createBinding(["entries:archive", 42], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:archive", 42);
+      expect(result).toBe(true);
+    });
+
+    it("should return false when the value is not a 2-element array", () => {
+      const binding = createBinding(["entries:write"], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false when the first element is not a string", () => {
+      const binding = createBinding([123, "section-123"], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+    });
+
+    it("should return false for a non-array value", () => {
+      const binding = createBinding("entries:write", "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+    });
+
+    it("should deny access and not call hasPermission when resourceId is undefined", () => {
+      const binding = createBinding(["entries:write", undefined], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+      expect(mockRbac.hasPermission).not.toHaveBeenCalled();
+    });
+
+    it("should deny access and not call hasPermission when resourceId is null", () => {
+      const binding = createBinding(["entries:write", null], "resource");
+      const result = checkAccess(binding, mockRbac);
+
+      expect(result).toBe(false);
+      expect(mockRbac.hasPermission).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Modifier-based Check", () => {
     it("should support permission modifier as fallback", () => {
       vi.mocked(mockRbac.hasPermission).mockReturnValue(true);

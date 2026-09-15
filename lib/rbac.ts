@@ -111,8 +111,11 @@ export function createRBAC(config: Partial<RBACConfig> = {}): RBAC {
       computeUserPermissions();
     },
 
-    hasPermission(permission: Permission): boolean {
-      return userPermissions.has(permission);
+    hasPermission(permission: Permission, resourceId?: string | number): boolean {
+      if (resourceId === undefined) {
+        return userPermissions.has(permission);
+      }
+      return userPermissions.has(`${permission}:${resourceId}`);
     },
 
     hasRole(role: RoleKey): boolean {

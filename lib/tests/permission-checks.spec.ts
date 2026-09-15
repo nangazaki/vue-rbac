@@ -21,7 +21,12 @@ describe("Permission Checks", () => {
           inherits: ["editor"],
         },
         editor: {
-          permissions: ["posts:create", "posts:edit"],
+          permissions: [
+            "posts:create",
+            "posts:edit",
+            "entries:write:section-123",
+            "entries:archive:42",
+          ],
           inherits: ["viewer"],
         },
         viewer: {
@@ -69,6 +74,51 @@ describe("Permission Checks", () => {
 
       expect(rbac.hasPermission("users:create")).toBe(false);
       expect(rbac.hasPermission("posts:view")).toBe(false);
+    });
+  });
+
+  describe("hasPermission() with resourceId", () => {
+    it("should return true when the composed permission matches", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      expect(rbac.hasPermission("entries:write", "section-123")).toBe(true);
+    });
+
+    it("should return false when the composed permission does not match", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      expect(rbac.hasPermission("entries:write", "section-999")).toBe(false);
+    });
+
+    it("should return false when only the unscoped action is granted", async () => {
+      rbac.setUserRoles(["admin"]);
+
+      // admin has "users:create" but not "users:create:section-123"
+      expect(rbac.hasPermission("users:create", "section-123")).toBe(false);
+    });
+
+    it("should support a numeric resourceId", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      expect(rbac.hasPermission("entries:archive", 42)).toBe(true);
+      expect(rbac.hasPermission("entries:archive", 43)).toBe(false);
+    });
+
+    it("should behave exactly like the one-argument call when resourceId is omitted", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      expect(rbac.hasPermission("posts:create")).toBe(true);
+      expect(rbac.hasPermission("posts:create", undefined)).toBe(true);
+    });
+
+    it("should treat resourceId 0 as a real value, not as omitted", async () => {
+      rbac.setUserRoles(["editor"]);
+
+      // editor has the unscoped "posts:create" permission but not
+      // "posts:create:0" — if resourceId=0 were ever mistaken for
+      // "omitted" (e.g. via a `!resourceId` check), this would
+      // wrongly return true by falling back to the unscoped check.
+      expect(rbac.hasPermission("posts:create", 0)).toBe(false);
     });
   });
 

@@ -25,6 +25,10 @@ import type { DirectiveBinding } from "vue";
  * v-rbac:not="'users:delete'"
  *
  * @example
+ * // Resource-scoped permission check
+ * v-rbac:resource="['entries:write', sectionId]"
+ *
+ * @example
  * // Default permission check
  * v-rbac="'users:create'"
  */
@@ -68,6 +72,20 @@ export function checkAccess(binding: DirectiveBinding, rbac: RBAC): boolean {
         hasAccess = !rbac.hasPermission(value);
       } else if (Array.isArray(value)) {
         hasAccess = !rbac.hasAnyPermission(value);
+      } else {
+        hasAccess = false;
+      }
+      break;
+
+    case "resource":
+      // v-rbac:resource="['entries:write', sectionId]"
+      if (
+        Array.isArray(value) &&
+        value.length === 2 &&
+        typeof value[0] === "string" &&
+        (typeof value[1] === "string" || typeof value[1] === "number")
+      ) {
+        hasAccess = rbac.hasPermission(value[0], value[1]);
       } else {
         hasAccess = false;
       }

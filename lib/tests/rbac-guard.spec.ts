@@ -123,6 +123,81 @@ describe("RbacGuard", () => {
     });
   });
 
+  describe("prop: resource", () => {
+    it("should render slot when permission + resource match", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const wrapper = mount(RbacGuard, {
+        props: { permission: "entries:write", resource: "section-123" },
+        slots: { default: defaultSlot },
+      });
+
+      expect(wrapper.find(".content").exists()).toBe(true);
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith(
+        "entries:write",
+        "section-123"
+      );
+    });
+
+    it("should not render slot when permission + resource check fails", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(false);
+
+      const wrapper = mount(RbacGuard, {
+        props: { permission: "entries:write", resource: "section-999" },
+        slots: { default: defaultSlot },
+      });
+
+      expect(wrapper.find(".content").exists()).toBe(false);
+    });
+
+    it("should support a numeric resource", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      mount(RbacGuard, {
+        props: { permission: "entries:archive", resource: 42 },
+        slots: { default: defaultSlot },
+      });
+
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:archive", 42);
+    });
+
+    it("should treat a resource of 0 as present, not absent", () => {
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      mount(RbacGuard, {
+        props: { permission: "entries:archive", resource: 0 },
+        slots: { default: defaultSlot },
+      });
+
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:archive", 0);
+    });
+
+    it("should warn and fall back to array (AND) semantics when permission is an array", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      vi.mocked(mockRbac.hasPermission).mockReturnValue(true);
+
+      const wrapper = mount(RbacGuard, {
+        props: {
+          permission: ["entries:write", "entries:read"],
+          resource: "section-123",
+        },
+        slots: { default: defaultSlot },
+      });
+
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.stringContaining(
+          '"resource" prop requires a single "permission" string'
+        )
+      );
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:write");
+      expect(mockRbac.hasPermission).toHaveBeenCalledWith("entries:read");
+      expect(wrapper.find(".content").exists()).toBe(true);
+
+      warnSpy.mockRestore();
+    });
+  });
+
   describe("prop: any", () => {
     it("should render slot when user has at least one permission", () => {
       vi.mocked(mockRbac.hasAnyPermission).mockReturnValue(true);

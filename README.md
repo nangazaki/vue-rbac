@@ -6,7 +6,7 @@ Vue RBAC is a flexible and lightweight Role-Based Access Control (RBAC) library 
 
 - ✅ Role and permission system with inheritance
 - 💡 Supports static, dynamic, and hybrid config modes
-- 🔐 Custom directives (`v-rbac`, `v-rbac:role`, `v-rbac:any`, `v-rbac:all`, `v-rbac:not`)
+- 🔐 Custom directives (`v-rbac`, `v-rbac:role`, `v-rbac:any`, `v-rbac:all`, `v-rbac:not`, `v-rbac:resource`)
 - 🧩 `<RbacGuard>` component with fallback and loading slots
 - 🧠 Programmatic access via `useRBAC()` composable
 - 🗄 Built-in storage adapters (localStorage, sessionStorage, cookies)
@@ -218,6 +218,13 @@ Hides the element if the user has the given role or permission:
 <div v-rbac:not="['admin', 'moderator']">Visible to regular users</div>
 ```
 
+### `v-rbac:resource`
+Checks a resource-scoped permission, composed as `${action}:${resourceId}`:
+
+```vue
+<div v-rbac:resource="['entries:write', sectionId]">Edit Section</div>
+```
+
 ---
 
 ## 🧩 RbacGuard Component
@@ -248,6 +255,7 @@ A component-based alternative to directives, with support for fallback and loadi
 | `permission` | `string \| string[]` | Check all permissions (AND) |
 | `any` | `string \| string[]` | Check any permission (OR) |
 | `all` | `string \| string[]` | Check all permissions (AND) |
+| `resource` | `string \| number` | Resource id to scope `permission` to (requires a single `permission` string) |
 | `not` | `string \| string[]` | Deny if user has role or permission |
 
 > Only one prop should be used at a time. If multiple are provided, only the first is evaluated.
@@ -359,6 +367,7 @@ app.use(VueRBAC, {
     <div v-rbac:any="['posts:edit', 'posts:create']">Post Management</div>
     <div v-rbac:all="['posts:edit', 'posts:publish']">Full Editor</div>
     <div v-rbac:not="'admin'">Non-admin content</div>
+    <div v-rbac:resource="['entries:write', sectionId]">Edit Section</div>
 
     <!-- Component-based -->
     <RbacGuard permission="users:create">

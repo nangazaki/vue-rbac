@@ -20,7 +20,7 @@ export interface RBAC {
   init(): Promise<RolesConfig>;
   fetchRolesAndPermissions(): Promise<RolesConfig>;
   setUserRoles(roles: RoleKey | RoleKey[]): void;
-  hasPermission(permission: Permission): boolean;
+  hasPermission(permission: Permission, resourceId?: string | number): boolean;
   hasRole(role: RoleKey): boolean;
   hasAnyPermission(permissions: Permission[]): boolean;
   hasAllPermissions(permissions: Permission[]): boolean;
@@ -31,7 +31,7 @@ export interface IUseRBAC {
   state: RBACState;
   setUserRoles(roles: RoleKey | RoleKey[]): void;
   hasRole(role: RoleKey): boolean;
-  hasPermission(permission: Permission): boolean;
+  hasPermission(permission: Permission, resourceId?: string | number): boolean;
   hasAnyPermission(permissions: Permission[]): boolean;
   hasAllPermissions(permissions: Permission[]): boolean;
   invalidateCache(): void;
