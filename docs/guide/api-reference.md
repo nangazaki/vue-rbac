@@ -191,7 +191,7 @@ A component alternative to directives with slot-based fallback and loading state
 | `role`       | `string \| string[]`    | Any of the listed roles required (OR)            |
 | `any`        | `string \| string[]`    | At least one permission required (OR)            |
 | `all`        | `string \| string[]`    | All permissions required (AND)                   |
-| `resource`   | `string \| number`      | Resource id to scope `permission` to (requires `permission` to be a single string, not an array) |
+| `resource`   | `string \| number`      | Resource id to scope `permission` to (requires `permission` to be a single string, not an array). If `resource` may be `undefined` while loading, guard with `v-if` rather than relying on `RbacGuard` to deny automatically. |
 | `not`        | `string \| string[]`    | Access denied if user has any of these           |
 
 > Only one prop is evaluated at a time. Priority order: `role` → `permission` → `any` → `all` → `not`.

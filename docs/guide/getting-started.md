@@ -81,6 +81,7 @@ You can also use advanced modifiers:
 - v-rbac:all="['read:posts','update:posts']" – render if user has all permissions
 - v-rbac:not="'delete:posts'" – render if user does not have the permission
 - v-rbac:role="'admin'" – render if user has the role
+- v-rbac:resource="['entries:write', sectionId]" – render if user has the permission scoped to a specific resource id
 
 ### Use the Composable
 
