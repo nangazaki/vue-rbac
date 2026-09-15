@@ -29,6 +29,11 @@ export const RbacGuard = defineComponent({
       default: undefined,
     },
 
+    resource: {
+      type: [String, Number] as PropType<string | number>,
+      default: undefined,
+    },
+
     /**
      * Denies access when the user has the specified role OR permission.
      * Accepts a string or array of strings. Each value is checked against
@@ -63,6 +68,14 @@ export const RbacGuard = defineComponent({
       }
 
       if (props.permission !== undefined) {
+        if (props.resource !== undefined) {
+          if (typeof props.permission === "string") {
+            return rbac.hasPermission(props.permission, props.resource);
+          }
+          logger.warn(
+            '[RbacGuard] "resource" prop requires a single "permission" string, got an array. Ignoring "resource".'
+          );
+        }
         return toArray(props.permission).every((p) => rbac.hasPermission(p));
       }
 
