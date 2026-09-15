@@ -6,6 +6,7 @@ export default defineConfig({
   description: "A powerful, dependency‑free RBAC toolkit built for Vue 3",
   lang: "en-US",
   cleanUrls: true,
+  srcExclude: ["superpowers/**"],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     search: {
